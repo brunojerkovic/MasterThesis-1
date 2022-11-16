@@ -22,5 +22,7 @@ Meaning, for the following parameter setting: \
 \
 the programme will run 2*5=10 experiments. \
 
-# Using different models and data generators
-To use different models and data generators, change the attributes: _loader_ and _model_ from _config_main.yaml_ file.
+# Parameter Explanation
+To use different models and data generators, change the attributes: _loader_ and _model_ from _config_main.yaml_ file. \
+Parameters: _c11,c12,c21,c22_ are elements of the 2-D coefficient matrix for the data generation of 2 variables. They are located inside _config_main.yaml_ file. \
+Other parameters such as the size of the training set (_trainset_size_), train-validation-test split (_tvt_split_), or values of the noise coefficient matrices (_noise_eta_off_diag, _noise_eta_on_diag_, _noise_sigma_off_diag_, _noise_sigma_on_diag_) are located inside _config.yaml_ file. \
