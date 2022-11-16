@@ -17,26 +17,23 @@ def concatenate_tensor_in_one_list(t: torch.Tensor, to_list):
     return t_ if to_list else np.array(t_)
 
 def aggregate_results(connection_graph):
-    coef_mat_est = []
+    '''
+    Turn the estimated output of the algorithm to the binary coefficient matrix.
+    :param connection_graph: Output of NRI (does not include self edges, it's probablistic)
+    :return: Coefficient matrix of shape (n_data,n_data)
+    '''
+    connection_graph = np.median(np.argmax(connection_graph, axis=-1), axis=0)
+    connection_graph[connection_graph>=0.5] = 1
+    connection_graph[connection_graph<0.5] = 0
+    n_data = int((1 + np.sqrt(1 + 4 * len(connection_graph))) / 2)
 
-    # TODO: zavrsi samo ovo jos
-    a = np.array([
-        [[2, 1], [1, 3]],
-        [[3, 2], [3, 2]],
-    ])
-
-    a = np.argmax(a, axis=-1)
-    print(a)
-
-    a = np.median(a, axis=0)
-    print(a)
-
-    a[a > 0.] = 1
-    print(a)
-
-    n_data = int((1 + np.sqrt(1 + 4 * len(a))) / 2)
-    print(n_data)
-    # END TODO
+    coef_mat_est = np.zeros((n_data, n_data))
+    idx = 0
+    for i in range(n_data):
+        for j in range(n_data):
+            if i != j:
+                coef_mat_est[i, j] = connection_graph[idx]
+                idx += 1
 
     return coef_mat_est
 

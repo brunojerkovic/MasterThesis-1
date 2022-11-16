@@ -9,9 +9,7 @@ from result_saver import ResultSaver
 
 class NRI(Model):
     def __init__(self, config: utils.dotdict, result_saver: ResultSaver):
-        super().__init__(config.seed, result_saver)
-        self.config = config
-        self.result_saver = result_saver
+        super().__init__(config, result_saver)
 
         self.verbose = config.verbose
         self.num_layers = config.num_layers
@@ -21,7 +19,7 @@ class NRI(Model):
         self.lam_ridge = config.lam_ridge
         self.max_iter = config.max_iter
 
-    def algorithm(self, series, coef_mat, edges) -> float:
+    def _algorithm(self, series, coef_mat, edges) -> float:
         # Set seeds
         self.set_seeds()
 
@@ -38,7 +36,4 @@ class NRI(Model):
         results.update({'accuracy': accuracy})
         results.update({'time': time.time()-start_time})
 
-        # Save the results
-        self.result_saver.add_results_to_buffer(self.config, results)
-
-        return accuracy
+        return accuracy, results

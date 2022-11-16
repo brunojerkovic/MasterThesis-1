@@ -57,7 +57,7 @@ nri:
   encoder_dropout: 0
   decoder_dropout: 0
   save_folder: logs
-  load_folder: ''
+  load_folder: saved_models
   edge_types: 2
   dims: 1
   lr_decay: 200

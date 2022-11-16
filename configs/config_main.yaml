@@ -6,11 +6,11 @@ c11: &c11 [0.4]
 c12: [0.4]
 c21: [0.]
 c22: *c11
-seed: [1] #, 101, 33, 12, 0]
+seed: [1, 101, 33, 12, 0]
 loader: var # var=1, svm=2, ngc_var=3,stocks=4
 
 # Model parameters
-model: [nri] # nri=1, ngc=2, ngc0=3, tvar=4
+model: [nri, ngc, ngc0, tvar] # nri=1, ngc=2, ngc0=3, tvar=4
 
 # Saving parameters
 #use_wandb: False

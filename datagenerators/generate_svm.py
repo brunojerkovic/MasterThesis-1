@@ -38,11 +38,11 @@ class SVMGenerator(DataGenerator):
         y = np.empty((self.time + self.burn_in, self.n_data))
         h = np.empty((self.time + self.burn_in, self.n_data))
         for i in range(self.lag):
-            h[i] = noise_eta[:, i]
+            h[i] = noise_eta[i]
         for t in range(self.lag, self.time + self.burn_in):
-            h[t] = self.mu @ (h[t - 1] - self.mu) + noise_eta[:, t]
+            h[t] = self.mu @ (h[t - 1] - self.mu) + noise_eta[t]
             omega = np.eye(self.n_data) * np.exp(h[t] / 2)
-            y[t] = omega @ noise_eps[:, t]
+            y[t] = omega @ noise_eps[t]
 
         y = y[self.burn_in:]
 

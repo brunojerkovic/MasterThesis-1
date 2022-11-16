@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 import random
 
+from result_saver import ResultSaver
+
 
 class DataGenerator(ABC):
     def __init__(self, config):
@@ -14,6 +16,7 @@ class DataGenerator(ABC):
         self.normalize_flag = config.normalize_data
         self.norm_range = (config.norm_range_min, config.norm_range_max)
         self.stationarity_radius = config.stationarity_radius
+        self.config = config
 
         self.trainset_size = config.trainset_size
         self.valid_size = int(config.trainset_size * config.tvt_split)
@@ -27,7 +30,7 @@ class DataGenerator(ABC):
         '''
         pass
 
-    def generate(self):
+    def generate(self, result_saver: ResultSaver):
         # Create seed
         random.seed(self.seed)
         np.random.seed(self.seed)
@@ -40,6 +43,13 @@ class DataGenerator(ABC):
 
         # Create binary edges matrix from coefficient matrix
         edges = self._generate_edges(coef_mat)
+
+        # Save data to the results
+        result_saver.add_results_to_buffer(self.config, {
+            'series': series.tolist(),
+            'edges': edges.tolist(),
+            'coef_mat': coef_mat.tolist()
+        })
 
         return series, coef_mat, edges
 

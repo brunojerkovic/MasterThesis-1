@@ -12,8 +12,7 @@ from result_saver import ResultSaver
 
 class NGC(Model):
     def __init__(self, config: utils.dotdict, result_saver: ResultSaver):
-        super().__init__(config.seed, result_saver)
-        self.config = config
+        super().__init__(config, result_saver)
 
         self.verbose = config.verbose
         self.num_layers = config.num_layers
@@ -23,7 +22,7 @@ class NGC(Model):
         self.lam_ridge = config.lam_ridge
         self.max_iter = config.max_iter
 
-    def algorithm(self, series, coef_mat, edges) -> float:
+    def _algorithm(self, series, coef_mat, edges) -> float:
         # Set seeds
         self.set_seeds()
 
@@ -69,6 +68,5 @@ class NGC(Model):
             'coef_mat': coef_mat.tolist(),
             'time': time.time() - start_time
         }
-        self.result_saver.add_results_to_buffer(self.config, results)
 
-        return accuracy
+        return accuracy, results

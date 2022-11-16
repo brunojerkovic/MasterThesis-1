@@ -1,5 +1,4 @@
 import utils
-from datagenerators.generate_stock_data import StockGenerator
 from datagenerators.generator_selector import generator_selector
 from models.model_selector import model_selector
 from result_saver import ResultSaver
@@ -19,7 +18,7 @@ def main():
 
         # Choose a data generator and get the data
         generator = generator_selector(experiment_config)
-        series, coef_mat , edges = generator.generate()
+        series, coef_mat , edges = generator.generate(result_saver)
 
         # Choose a model and get the results
         model = model_selector(experiment_config, result_saver)

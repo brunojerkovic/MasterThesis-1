@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 import numpy as np
 import torch
 
+import utils
 from result_saver import ResultSaver
 
 
 class Model(ABC):
-    def __init__(self, seed: int, result_saver: ResultSaver):
-        self.seed = seed
+    def __init__(self, config: utils.dotdict, result_saver: ResultSaver):
+        self.config = config
+        self.seed = config.seed
         self.result_saver = result_saver
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -22,6 +24,9 @@ class Model(ABC):
             torch.cuda.manual_seed(self.seed)
 
     @abstractmethod
+    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
+        pass
+
     def algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
         """
         Training and testing the algorithm
@@ -30,7 +35,9 @@ class Model(ABC):
         :param edges: binary edge matrix of the data (the second label)
         :return: Accuracy of the model on the data
         """
-        pass
+        accuracy, results = self._algorithm(series, coef_mat, edges)
+        self.result_saver.add_results_to_buffer(self.config, results, data_flag=False)
+        return accuracy
 
     def _calculate_accuracy(self, coef_mat: np.ndarray, coef_mat_hat: np.ndarray) -> float:
         coef_mat_r = coef_mat.ravel()

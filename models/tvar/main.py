@@ -17,8 +17,7 @@ pandas2ri.activate()
 
 class TVAR(Model):
     def __init__(self, config: utils.dotdict, result_saver: ResultSaver):
-        super().__init__(config.seed, result_saver)
-        self.config = config
+        super().__init__(config, result_saver)
 
         self.P = config.P
         self.lambda1_opt = config.lambda1_opt
@@ -26,7 +25,7 @@ class TVAR(Model):
 
         self.__install_package()
 
-    def algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
+    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
         # Install package in R if it is not installed
         robjects.r('''
             if (!require("tVAR")) install.packages("tvar/sourcecode/t-VAR", repos=NULL, type="source")
@@ -48,9 +47,8 @@ class TVAR(Model):
             'coef_mat_hat': list(coef_mat_hat.ravel()),
             'time': time.time()-start_time
         }
-        self.result_saver.add_results_to_buffer(self.config, results)
 
-        return accuracy
+        return accuracy, results
 
     def __install_package(self):
         if len(os.listdir('models/tvar/sourcecode')) == 0:
