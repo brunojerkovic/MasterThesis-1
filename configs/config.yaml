@@ -1,10 +1,7 @@
-# Experiment parameters
-#use_wandb: false
-
 # Data parameters
 generate_ngc_data: true
 sparsity: 0.9
-trainset_size: 1000
+trainset_size: 5000
 tvt_split: 0.5
 n_data: &n_data 2
 svm: false
@@ -23,10 +20,11 @@ stationarity_radius: 0.97
 mu_value: 0.025
 
 # Stock data parameters
-stock_start: "2000-01-01" # 2008-03-01
-stock_end: "2020-01-01" # 2017-02-01
+stock_start: "2008-03-01" # 2008-03-01
+stock_end: "2017-02-01" # 2017-02-01
 stock_freq: 1d # 10m (5m only possible)
 stock_n_obs: 1m # 1d (calculates the RV of the day from 10m data)
+stock_force_preprocessing: true
 
 # Model parameters
 # NGC

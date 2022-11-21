@@ -27,8 +27,9 @@ def main():
         print(f"Accuracy for experiment id {exp_id} is {accuracy}")
 
         # Save the results (only at saving idxs)
+        result_saver.save(experiment_config)
         if exp_id in saving_idxs:
-            result_saver.save(experiment_config)
+            result_saver.empty_buffer()
 
 if __name__ == '__main__':
     main()

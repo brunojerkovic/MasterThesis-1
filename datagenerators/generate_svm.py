@@ -12,7 +12,7 @@ class SVMGenerator(DataGenerator):
         self.sigma_eps_diag, self.sigma_eps_off_diag = config.sigma_eps_diag, config.sigma_eps_off_diag
         self.mu = np.array([config.mu_value] * self.n_data)
 
-    def _generate_series(self) -> tuple[np.ndarray, np.ndarray]:
+    def _generate_series(self) -> tuple:
         # Generate matrices for coefficients and noise
         coef_mat = np.array([
             [self.c11, self.c12],

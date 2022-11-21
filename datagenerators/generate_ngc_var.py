@@ -10,7 +10,7 @@ class NGCVARGenerator(DataGenerator):
         self.sigma_eta_diag = config.sigma_eta_diag
         self.std = np.sqrt(self.sigma_eta_diag)
 
-    def _generate_series(self) -> tuple[np.ndarray, np.ndarray]:
+    def _generate_series(self) -> tuple:
         # Set up coefficients and Granger causality ground truth.
         GC = np.eye(self.n_data, dtype=int)
         coef_mat = np.eye(self.n_data) * self.beta_value

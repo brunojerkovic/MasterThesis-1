@@ -24,7 +24,7 @@ class DataGenerator(ABC):
         self.time = self.trainset_size + self.valid_size + self.eval_size + 2 * self.timesteps
 
     @abstractmethod
-    def _generate_series(self) -> tuple[np.ndarray, np.ndarray]:
+    def _generate_series(self) -> tuple:
         '''
         :return: A tuple of numpy array of series and numpy array of coef_mat
         '''
@@ -46,7 +46,6 @@ class DataGenerator(ABC):
 
         # Save data to the results
         result_saver.add_results_to_buffer(self.config, {
-            'series': series.tolist(),
             'edges': edges.tolist(),
             'coef_mat': coef_mat.tolist()
         })

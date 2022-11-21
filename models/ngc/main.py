@@ -64,7 +64,6 @@ class NGC(Model):
             'accuracy': accuracy,
             'train_losses': train_losses,
             'predictions': predictions.tolist(),
-            'data': X.cpu().data.numpy().tolist(),
             'coef_mat': coef_mat.tolist(),
             'time': time.time() - start_time
         }

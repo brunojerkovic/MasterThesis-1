@@ -267,11 +267,6 @@ def test(test_loader, config):
 
     # Concatenate results of all batches (and save the prediction/targets from the decoder)
     connection_graph = concatenate_tensor_in_one_list(connection_graph, to_list=False)
-    test_predictions = concatenate_tensor_in_one_list(test_predictions, to_list=True)
-    test_targets = concatenate_tensor_in_one_list(test_targets, to_list=True)
-
-    results['test']['predictions'] = test_predictions
-    results['test']['targets'] = test_targets
 
     return connection_graph
 
@@ -373,8 +368,6 @@ def train_test(config, train_loader, valid_loader, test_loader):
             'kl': [],
             'mse': [],
             'acc': [],
-            'predictions': [],
-            'targets': []
         }
     }
     best_val_loss = np.inf
@@ -389,7 +382,7 @@ def train_test(config, train_loader, valid_loader, test_loader):
         print(f"Best epoch {best_epoch}")
     connection_graph = test(test_loader, config)
 
-    # TODO: Get somehow coef_mat_est from the outputs inferred on test set
+    # Aggregate distribution of graphs into one graph
     coef_mat_est = aggregate_results(connection_graph)
 
     return coef_mat_est, results

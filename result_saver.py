@@ -5,7 +5,7 @@ from datetime import datetime
 import utils
 
 
-class ResultSaver():
+class ResultSaver:
     def __init__(self, config):
         self.config = config
         self.storage_buffer = {} # lists have exp_id:dict_of_results_per_experiment
@@ -34,5 +34,5 @@ class ResultSaver():
             with open(result_path + '/results.json', "w") as f:
                 json.dump(self.storage_buffer, f, indent=4)
 
-        # Empty out the buffer
+    def empty_buffer(self):
         self.storage_buffer = {}
