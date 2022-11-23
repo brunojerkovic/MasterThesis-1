@@ -46,6 +46,6 @@ class NGCVARGenerator(DataGenerator):
         max_eig = max(np.abs(eigvals))
         nonstationary = max_eig > self.stationarity_radius
         if nonstationary:
-            return self.create_stat_coef_mat(0.95 * coef_mat)
+            return self.__create_stat_coef_mat(0.95 * coef_mat)
         else:
             return coef_mat

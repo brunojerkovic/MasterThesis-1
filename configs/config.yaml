@@ -1,12 +1,11 @@
 # Data parameters
 generate_ngc_data: true
 sparsity: 0.9
-trainset_size: 5000
-tvt_split: 0.5
-n_data: &n_data 2
-svm: false
+trainset_size: 3000
+tvt_split: 0.8
+n_data: 2
 sigma_eta_diag: 0.01
-sigma_eta_off_diag: 0.
+sigma_eta_off_diag: 0
 sigma_eps_diag: 1
 sigma_eps_off_diag: 0.6
 beta_value: 0.9
@@ -47,7 +46,7 @@ nri:
   batch_size: 128
   lr: 0.0005
   temp: 0.5
-  num_atoms: *n_data
+  num_atoms: FOLLOW_n_data
   encoder: mlp
   decoder: mlp
   no_factor: true

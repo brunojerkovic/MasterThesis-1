@@ -2,6 +2,7 @@ import utils
 from datagenerators.generator_selector import generator_selector
 from models.model_selector import model_selector
 from result_saver import ResultSaver
+import copy
 
 
 def main():
@@ -12,8 +13,9 @@ def main():
 
     for exp_id, exp_params in enumerate(parameter_combinations):
         # Parameters for this experiment
-        experiment_config = utils.dotdict(config)
+        experiment_config = utils.deepcopy_lvl1(config)
         experiment_config.update(exp_params)
+        experiment_config = utils.get_nested_config(experiment_config)
         experiment_config.exp_id = exp_id
 
         # Choose a data generator and get the data
