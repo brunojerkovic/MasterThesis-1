@@ -14,7 +14,6 @@ from result_saver import ResultSaver
 
 pandas2ri.activate()
 
-
 class TVAR(Model):
     def __init__(self, config: utils.dotdict, result_saver: ResultSaver):
         super().__init__(config, result_saver)
@@ -25,7 +24,7 @@ class TVAR(Model):
 
         self.__install_package()
 
-    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
+    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> tuple:
         # Install package in R if it is not installed
         robjects.r('''
             if (!require("tVAR")) install.packages("tvar/sourcecode/t-VAR", repos=NULL, type="source")
@@ -44,7 +43,7 @@ class TVAR(Model):
         # Save the results
         results = {
             'accuracy': accuracy,
-            'coef_mat_hat': list(coef_mat_hat.ravel()),
+            'GC_est': coef_mat_hat.tolist(),
             'time': time.time()-start_time
         }
 

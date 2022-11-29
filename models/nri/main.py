@@ -19,7 +19,7 @@ class NRI(Model):
         self.lam_ridge = config.lam_ridge
         self.max_iter = config.max_iter
 
-    def _algorithm(self, series, coef_mat, edges) -> float:
+    def _algorithm(self, series, coef_mat, edges) -> tuple:
         # Set seeds
         self.set_seeds()
 
@@ -28,11 +28,12 @@ class NRI(Model):
 
         # Train NRI model
         start_time = time.time()
-        coef_mat_est, results_ = train_test(self.config, train_loader, valid_loader, test_loader)
+        GC_est, results_ = train_test(self.config, train_loader, valid_loader, test_loader)
         results = {set_name+'_'+metric_name:values for set_name,v in results_.items() for metric_name,values in v.items()}
 
         # Verify learned Granger causality
-        accuracy = self._calculate_accuracy(coef_mat, coef_mat_est)
+        accuracy = self._calculate_accuracy(coef_mat, GC_est)
+        results.update({'GC_est', GC_est.tolist()})
         results.update({'accuracy': accuracy})
         results.update({'time': time.time()-start_time})
 

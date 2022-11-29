@@ -24,7 +24,7 @@ class Model(ABC):
             torch.cuda.manual_seed(self.seed)
 
     @abstractmethod
-    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:
+    def _algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> tuple:
         pass
 
     def algorithm(self, series: np.ndarray, coef_mat: np.ndarray, edges: np.ndarray) -> float:

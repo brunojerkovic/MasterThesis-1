@@ -2,7 +2,6 @@ import utils
 from datagenerators.generator_selector import generator_selector
 from models.model_selector import model_selector
 from result_saver import ResultSaver
-import copy
 
 
 def main():
