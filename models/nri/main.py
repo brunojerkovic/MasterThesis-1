@@ -33,7 +33,7 @@ class NRI(Model):
 
         # Verify learned Granger causality
         accuracy = self._calculate_accuracy(coef_mat, GC_est)
-        results.update({'GC_est', GC_est.tolist()})
+        results.update({'GC_est': GC_est.tolist()})
         results.update({'accuracy': accuracy})
         results.update({'time': time.time()-start_time})
 
