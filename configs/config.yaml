@@ -2,7 +2,7 @@
 generate_ngc_data: true
 sparsity: 0.9
 trainset_size: 3000
-tvt_split: [0.1] # , 0.2, 0.5, 0.8, 1.0] # 0.8
+tvt_split: [0.2] # , 0.2, 0.5, 0.8, 1.0] # 0.8
 n_data: 5
 sigma_eta_diag: 0.01
 sigma_eta_off_diag: 0
@@ -19,7 +19,7 @@ stationarity_radius: 0.97
 mu_value: 0.025
 
 # Stock data parameters
-stock_start: "2016-01-01" # use '2008-03-01' for full dataset, use '2016-01-01' for partial dataset
+stock_start: "2008-03-01" # use '2008-03-01' for full dataset, use '2016-01-01' for partial dataset
 stock_end: "2017-02-01" # use '2017-02-01' for full dataset, use '2017-02-01' for partial dataset
 stock_force_preprocessing: false
 n_stocks: 30 # choose a number in interval [2,30]
@@ -41,7 +41,7 @@ nri:
   prediction_steps: 4
   decoder_hidden: 256
   encoder_hidden: 256
-  no_cuda: false
+  no_cuda: true
   batch_size: 128
   lr: 0.0005
   temp: 0.5

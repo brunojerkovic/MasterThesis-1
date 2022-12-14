@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 from copy import deepcopy
 from models.ngc.sourcecode.model_helper import activation_helper
+from models.ngc.utils import data_splitter
 
 
 class MLP(nn.Module):
@@ -561,5 +562,101 @@ def train_unregularized(cmlp, X, lr, max_iter, lookback=5, check_every=100,
 
     # Restore best model.
     restore_parameters(cmlp, best_model)
+
+    return train_loss_list
+
+def train_model_ista_stocks(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
+                     lookback=5, check_every=100, verbose=1, train_test_split=(0.8, 0.1, 0.1)):
+    train_size, valid_size, test_size = X.shape[0] * train_test_split[0], X.shape[0] * train_test_split[1], X.shape[0] * train_test_split[2]
+
+    '''Train model with Adam.'''
+    lag = cmlp.lag
+    p = X.shape[-1]
+    loss_fn = nn.MSELoss(reduction='mean')
+    train_loss_list, valid_loss_list = [], []
+
+    # For early stopping.
+    best_it, best_it_valid = None, None
+    best_loss, best_loss_valid = np.inf, np.inf
+    best_model, best_model_valid = None, None
+
+    # Calculate smooth error.
+    mse_loss = sum([loss_fn(cmlp.networks[i](X[:, :-1]), X[:, lag:, i:i+1])
+                for i in range(p)])
+    ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
+    smooth = mse_loss + ridge
+
+    for it in range(max_iter):
+        X_train_full, X_valid_full = data_splitter(X, train_test_split, it, max_iter)
+        mse_loss, mse_loss_valid = 0, 0
+
+        for (X_train, X_valid) in zip(X_train_full, X_valid_full):
+            # Take gradient step.
+            smooth.backward()
+            for param in cmlp.parameters():
+                param.data = param - lr * param.grad
+
+            # Take prox step.
+            if lam > 0:
+                for net in cmlp.networks:
+                    prox_update(net, lam, lr, penalty)
+
+            cmlp.zero_grad()
+
+            # Calculate loss for next iteration.
+            mse_loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1]), X_train[:, lag:, i:i+1])
+                        for i in range(p)])
+            ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
+            smooth = mse_loss + ridge
+
+            # Check progress.
+            if (it + 1) % check_every == 0:
+                # Add nonsmooth penalty.
+                nonsmooth = sum([regularize(net, lam, penalty)
+                                 for net in cmlp.networks])
+                mean_loss = (smooth + nonsmooth) / p
+                train_loss_list.append(mean_loss.detach())
+
+                if verbose > 0:
+                    print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
+                    print('Loss = %f' % mean_loss)
+                    print('Variable usage = %.2f%%'
+                          % (100 * torch.mean(cmlp.GC().float())))
+
+                # Check for early stopping.
+                if mean_loss < best_loss:
+                    best_loss = mean_loss
+                    best_it = it
+                    best_model = deepcopy(cmlp)
+                elif (it - best_it) == lookback * check_every:
+                    if verbose:
+                        print('Stopping early')
+                    break
+
+            # Perform validation check
+            smooth_valid = sum([loss_fn(cmlp.networks[i](X_valid[:, :-1]), X_valid[:, lag:, i:i+1])
+                    for i in range(p)]) + ridge
+            if (it + 1) % check_every == 0:
+                mean_loss_valid = (smooth_valid + nonsmooth) / p
+                valid_loss_list.append(mean_loss_valid.detach())
+
+                if verbose > 0:
+                    print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
+                    print('VALID Loss = %f' % mean_loss_valid)
+                    print('VALID Variable usage = %.2f%%'
+                          % (100 * torch.mean(cmlp.GC().float())))
+                # Check for early stopping.
+                if mean_loss_valid < best_loss_valid:
+                    best_loss_valid = mean_loss_valid
+                    best_it_valid = it
+                    best_model_valid = deepcopy(cmlp)
+                elif (it - best_it_valid) == lookback * check_every:
+                    if verbose:
+                        print('Stopping early')
+                    break
+
+
+    # Restore best model.
+    restore_parameters(cmlp, best_model_valid)
 
     return train_loss_list
