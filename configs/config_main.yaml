@@ -7,7 +7,7 @@ c12: 0.
 c21: 0.
 c22: FOLLOW_c11
 seed: [1] # [1, 101, 33, 12, 0]
-loader: [stocks] # var=1, svm=2, ngc_var=3, stocks=4
+loader: [var] # var=1, svm=2, ngc_var=3, stocks=4
 
 # Model parameters
 model: [ngc] # nri=1, ngc=2, ngc0=3, tvar=4

@@ -67,7 +67,7 @@ nri:
 
 # tVAR
 tvar:
-  r_bin_path: C:\Program Files\R\R-4.2.2
+  r_bin_path: /Library/Frameworks/R.framework/Resources/bin/R
   P: 1
   lambda1_opt: 5
   gamma1_opt: 0.2
