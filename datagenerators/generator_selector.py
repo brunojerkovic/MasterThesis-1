@@ -9,10 +9,8 @@ from datagenerators.generate_stock_data import StockGenerator
 def generator_selector(config: utils.dotdict) -> DataGenerator:
     Generator = None
     if config.loader == 'var' or config.loader == 1:
-        config['n_data'] = config['nri']['num_atoms'] = 2
         Generator = VARGenerator
     elif config.loader == 'svm' or config.loader == 2:
-        config['n_data'] = config['nri']['num_atoms'] = 2
         Generator = SVMGenerator
     elif config.loader == 'ngc_var' or config.loader == 3:
         Generator = NGCVARGenerator

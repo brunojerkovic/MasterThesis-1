@@ -1,0 +1,53 @@
+R[write to console]: Loading required package: tVAR
+
+* installing *source* package ‘tVAR’ ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (tVAR)
+/home/bjerkovic/.local/lib/python3.8/site-packages/rpy2/robjects/vectors.py:927: UserWarning: R object inheriting from "POSIXct" but without attribute "tzone".
+  warnings.warn('R object inheriting from "POSIXct" but without '
+Accuracy for experiment id 0 is 0.96875
+Accuracy for experiment id 1 is 0.96875
+Accuracy for experiment id 2 is 0.9375
+Accuracy for experiment id 3 is 0.9375
+Accuracy for experiment id 4 is 0.96875
+Accuracy for experiment id 5 is 0.96875
+Accuracy for experiment id 6 is 1.0
+Accuracy for experiment id 7 is 1.0
+
+
+###############################################################################
+Science Cluster
+Job 2539581 for user 'bjerkovic'
+Finished at: Mon Nov 28 17:24:37 CET 2022
+
+Job details:
+============
+
+Name                : exp4a
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn48
+Cores               : 2
+State               : COMPLETED
+Submit              : 2022-11-28T16:11:30
+Start               : 2022-11-28T16:11:30
+End                 : 2022-11-28T17:24:36
+Reserved walltime   : 1-06:00:00
+Used walltime       :   01:13:06
+Used CPU time       :   00:55:45 (efficiency: 38.14%)
+% User (Computation): 44.48%
+% System (I/O)      : 55.52%
+Mem reserved        : 2G/core
+Max Mem used        : 117.05G (cn48)
+Max Disk Write      : 0.00  (cn48)
+Max Disk Read       : 839.68K (cn48)
+

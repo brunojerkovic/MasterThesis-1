@@ -1,0 +1,65 @@
+R[write to console]: Loading required package: tVAR
+
+Warning in dir.create(lockdir, recursive = TRUE) :
+  '/home/bjerkovic/software/packages/00LOCK-t-VAR' already exists
+* installing *source* package ‘tVAR’ ...
+mv: cannot stat '/home/bjerkovic/software/packages/tVAR': No such file or directory
+ERROR: cannot remove earlier installation, is it in use?
+* removing ‘/home/bjerkovic/software/packages/tVAR’
+* restoring previous ‘/home/bjerkovic/software/packages/tVAR’
+/home/bjerkovic/.local/lib/python3.8/site-packages/rpy2/robjects/vectors.py:927: UserWarning: R object inheriting from "POSIXct" but without attribute "tzone".
+  warnings.warn('R object inheriting from "POSIXct" but without '
+Accuracy for experiment id 0 is 0.0
+Accuracy for experiment id 1 is 0.0
+Accuracy for experiment id 2 is 0.0
+Accuracy for experiment id 3 is 0.0
+Accuracy for experiment id 4 is 0.0
+Accuracy for experiment id 5 is 0.0
+Accuracy for experiment id 6 is 0.0
+Accuracy for experiment id 7 is 0.0
+Accuracy for experiment id 8 is 0.0
+Accuracy for experiment id 9 is 0.0
+Accuracy for experiment id 10 is 0.0
+Accuracy for experiment id 11 is 0.0
+Accuracy for experiment id 12 is 0.0
+Accuracy for experiment id 13 is 0.0
+Accuracy for experiment id 14 is 0.0
+Accuracy for experiment id 15 is 0.0
+Accuracy for experiment id 16 is 0.0
+Accuracy for experiment id 17 is 0.0
+Accuracy for experiment id 18 is 0.0
+Accuracy for experiment id 19 is 0.0
+Accuracy for experiment id 20 is 0.0
+Accuracy for experiment id 21 is 0.0
+Accuracy for experiment id 22 is 0.0
+Accuracy for experiment id 23 is 0.0
+Accuracy for experiment id 24 is 0.0
+
+
+###############################################################################
+Science Cluster
+Job 2540403 for user 'bjerkovic'
+Finished at: Wed Nov 30 03:03:45 CET 2022
+
+Job details:
+============
+
+Name                : exp6c
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn47
+Cores               : 2
+State               : COMPLETED
+Submit              : 2022-11-30T02:17:59
+Start               : 2022-11-30T02:57:59
+End                 : 2022-11-30T03:03:45
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:05:46
+Used CPU time       :   00:05:30 (efficiency: 47.78%)
+% User (Computation): 82.77%
+% System (I/O)      : 17.23%
+Mem reserved        : 2G/core
+Max Mem used        : 2.81G (cn47)
+Max Disk Write      : 0.00  (cn47)
+Max Disk Read       : 849.92K (cn47)
+

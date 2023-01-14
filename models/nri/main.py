@@ -19,7 +19,7 @@ class NRI(Model):
         self.lam_ridge = config.lam_ridge
         self.max_iter = config.max_iter
 
-    def _algorithm(self, series, coef_mat, edges) -> tuple:
+    def _algorithm(self, series, coef_mat, edges) -> float:
         # Set seeds
         self.set_seeds()
 

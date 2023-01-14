@@ -2,7 +2,6 @@ from models.model import Model
 from models.nri.main import NRI
 from models.ngc.main import NGC
 from models.tvar.main import TVAR
-from models.ngc_noise.main import NGC as NGCNoise
 
 def model_selector(config, result_saver) -> Model:
     MyModel = None
@@ -18,8 +17,5 @@ def model_selector(config, result_saver) -> Model:
     elif config.model == 'tvar' or config.model == 4:
         MyModel = TVAR
         config.update(config.tvar)
-    elif config.model == 'ngc_noise' or config.model == 5:
-        MyModel = NGCNoise
-        config.update(config.ngc_noise)
 
     return MyModel(config, result_saver)

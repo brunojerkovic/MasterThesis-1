@@ -1,0 +1,85 @@
+R[write to console]: Loading required package: tVAR
+
+* installing *source* package ‘tVAR’ ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (tVAR)
+/home/bjerkovic/.local/lib/python3.8/site-packages/rpy2/robjects/vectors.py:927: UserWarning: R object inheriting from "POSIXct" but without attribute "tzone".
+  warnings.warn('R object inheriting from "POSIXct" but without '
+Accuracy for experiment id 0 is 1.0
+Accuracy for experiment id 1 is 1.0
+Accuracy for experiment id 2 is 0.75
+Accuracy for experiment id 3 is 0.75
+Accuracy for experiment id 4 is 1.0
+Accuracy for experiment id 5 is 1.0
+Accuracy for experiment id 6 is 1.0
+Accuracy for experiment id 7 is 1.0
+Accuracy for experiment id 8 is 1.0
+Accuracy for experiment id 9 is 1.0
+Accuracy for experiment id 10 is 0.5
+Accuracy for experiment id 11 is 0.5
+Accuracy for experiment id 12 is 0.5
+Accuracy for experiment id 13 is 0.5
+Accuracy for experiment id 14 is 0.5
+Accuracy for experiment id 15 is 1.0
+Accuracy for experiment id 16 is 1.0
+Accuracy for experiment id 17 is 1.0
+Accuracy for experiment id 18 is 1.0
+Accuracy for experiment id 19 is 1.0
+Accuracy for experiment id 20 is 1.0
+Accuracy for experiment id 21 is 1.0
+Accuracy for experiment id 22 is 0.75
+Accuracy for experiment id 23 is 0.75
+Accuracy for experiment id 24 is 1.0
+Accuracy for experiment id 25 is 1.0
+Accuracy for experiment id 26 is 1.0
+Accuracy for experiment id 27 is 1.0
+Accuracy for experiment id 28 is 1.0
+Accuracy for experiment id 29 is 1.0
+Accuracy for experiment id 30 is 0.5
+Accuracy for experiment id 31 is 0.5
+Accuracy for experiment id 32 is 0.5
+Accuracy for experiment id 33 is 0.5
+Accuracy for experiment id 34 is 0.5
+Accuracy for experiment id 35 is 1.0
+Accuracy for experiment id 36 is 1.0
+Accuracy for experiment id 37 is 1.0
+Accuracy for experiment id 38 is 1.0
+Accuracy for experiment id 39 is 1.0
+
+
+###############################################################################
+Science Cluster
+Job 2539644 for user 'bjerkovic'
+Finished at: Mon Nov 28 18:16:13 CET 2022
+
+Job details:
+============
+
+Name                : exp2
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn47
+Cores               : 2
+State               : COMPLETED
+Submit              : 2022-11-28T18:01:44
+Start               : 2022-11-28T18:01:44
+End                 : 2022-11-28T18:16:13
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:14:29
+Used CPU time       :   00:14:21 (efficiency: 49.55%)
+% User (Computation): 51.68%
+% System (I/O)      : 48.32%
+Mem reserved        : 2G/core
+Max Mem used        : 9.92G (cn47)
+Max Disk Write      : 0.00  (cn47)
+Max Disk Read       : 839.68K (cn47)
+

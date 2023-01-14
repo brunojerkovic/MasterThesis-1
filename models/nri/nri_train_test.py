@@ -382,7 +382,7 @@ def train_test(config, train_loader, valid_loader, test_loader):
         print(f"Best epoch {best_epoch}")
     connection_graph = test(test_loader, config)
 
-    # Aggregate distribution of graphs into one graph
+    # TODO: Get somehow coef_mat_est from the outputs inferred on test set
     coef_mat_est = aggregate_results(connection_graph)
 
     return coef_mat_est, results

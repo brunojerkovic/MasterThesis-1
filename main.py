@@ -21,7 +21,6 @@ def main():
         generator = generator_selector(experiment_config)
         series, coef_mat , edges = generator.generate(result_saver)
 
-
         # Choose a model and get the results
         model = model_selector(experiment_config, result_saver)
         accuracy = model.algorithm(series, coef_mat, edges)

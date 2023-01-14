@@ -1,0 +1,70 @@
+R[write to console]: Loading required package: tVAR
+
+* installing *source* package ‘tVAR’ ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (tVAR)
+/home/bjerkovic/.local/lib/python3.8/site-packages/rpy2/robjects/vectors.py:927: UserWarning: R object inheriting from "POSIXct" but without attribute "tzone".
+  warnings.warn('R object inheriting from "POSIXct" but without '
+Accuracy for experiment id 0 is 0.2477777777777778
+Accuracy for experiment id 1 is 0.2477777777777778
+Accuracy for experiment id 2 is 0.2477777777777778
+Accuracy for experiment id 3 is 0.2477777777777778
+Accuracy for experiment id 4 is 0.2477777777777778
+Accuracy for experiment id 5 is 0.2477777777777778
+Accuracy for experiment id 6 is 0.2477777777777778
+Accuracy for experiment id 7 is 0.2477777777777778
+Accuracy for experiment id 8 is 0.2477777777777778
+Accuracy for experiment id 9 is 0.2477777777777778
+Accuracy for experiment id 10 is 0.2477777777777778
+Accuracy for experiment id 11 is 0.2477777777777778
+Accuracy for experiment id 12 is 0.2477777777777778
+Accuracy for experiment id 13 is 0.2477777777777778
+Accuracy for experiment id 14 is 0.2477777777777778
+Accuracy for experiment id 15 is 0.2477777777777778
+Accuracy for experiment id 16 is 0.2477777777777778
+Accuracy for experiment id 17 is 0.2477777777777778
+Accuracy for experiment id 18 is 0.2477777777777778
+Accuracy for experiment id 19 is 0.2477777777777778
+Accuracy for experiment id 20 is 0.2477777777777778
+Accuracy for experiment id 21 is 0.2477777777777778
+Accuracy for experiment id 22 is 0.2477777777777778
+Accuracy for experiment id 23 is 0.2477777777777778
+Accuracy for experiment id 24 is 0.2477777777777778
+
+
+###############################################################################
+Science Cluster
+Job 2541274 for user 'bjerkovic'
+Finished at: Fri Dec  2 19:44:20 CET 2022
+
+Job details:
+============
+
+Name                : exp6b
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn48
+Cores               : 2
+State               : COMPLETED
+Submit              : 2022-12-02T03:13:42
+Start               : 2022-12-02T03:13:42
+End                 : 2022-12-02T19:44:20
+Reserved walltime   : 1-06:00:00
+Used walltime       :   16:30:38
+Used CPU time       :   08:28:07 (efficiency: 25.65%)
+% User (Computation): 46.07%
+% System (I/O)      : 53.93%
+Mem reserved        : 2G/core
+Max Mem used        : 79.59G (cn48)
+Max Disk Write      : 0.00  (cn48)
+Max Disk Read       : 849.92K (cn48)
+

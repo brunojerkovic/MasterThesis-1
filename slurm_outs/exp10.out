@@ -1,0 +1,48 @@
+R[write to console]: Loading required package: tVAR
+
+* installing *source* package ‘tVAR’ ...
+** using staged installation
+** R
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** testing if installed package can be loaded from temporary location
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (tVAR)
+/home/bjerkovic/.local/lib/python3.8/site-packages/rpy2/robjects/vectors.py:927: UserWarning: R object inheriting from "POSIXct" but without attribute "tzone".
+  warnings.warn('R object inheriting from "POSIXct" but without '
+[[ 0.89805612  0.0013458 ]
+ [-0.00365616  0.90598138]]
+ALGORITHM DONE
+
+
+###############################################################################
+Science Cluster
+Job 2539578 for user 'bjerkovic'
+Finished at: Mon Nov 28 16:09:21 CET 2022
+
+Job details:
+============
+
+Name                : exp10
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn48
+Cores               : 2
+State               : COMPLETED
+Submit              : 2022-11-28T16:08:47
+Start               : 2022-11-28T16:08:48
+End                 : 2022-11-28T16:09:21
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:00:33
+Used CPU time       :   00:00:27 (efficiency: 41.13%)
+% User (Computation): 60.03%
+% System (I/O)      : 39.97%
+Mem reserved        : 2G/core
+Max Mem used        : 0.00  (cn48)
+Max Disk Write      : 0.00  (cn48)
+Max Disk Read       : 0.00  (cn48)
+

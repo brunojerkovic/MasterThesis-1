@@ -1,0 +1,63 @@
+/home/bjerkovic/thesis/models/nri/sourcecode/modules.py:27: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(m.weight.data)
+/home/bjerkovic/thesis/models/nri/sourcecode/modules.py:110: UserWarning: nn.init.xavier_normal is now deprecated in favor of nn.init.xavier_normal_.
+  nn.init.xavier_normal(m.weight.data)
+/home/bjerkovic/.local/lib/python3.8/site-packages/torch/optim/lr_scheduler.py:138: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+  warnings.warn("Detected call of `lr_scheduler.step()` before `optimizer.step()`. "
+/home/bjerkovic/thesis/models/nri/sourcecode/utils.py:11: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  soft_max_1d = F.softmax(trans_input) # dim=1
+/home/bjerkovic/thesis/models/nri/nri_train_test.py:117: UserWarning: volatile was removed and now has no effect. Use `with torch.no_grad():` instead.
+  data, relations = Variable(data, volatile=True), Variable(
+Using MLP encoder.
+Using learned interaction net decoder.
+Traceback (most recent call last):
+  File "main.py", line 36, in <module>
+    main()
+  File "main.py", line 26, in main
+    accuracy = model.algorithm(series, coef_mat, edges)
+  File "/home/bjerkovic/thesis/models/model.py", line 38, in algorithm
+    accuracy, results = self._algorithm(series, coef_mat, edges)
+  File "/home/bjerkovic/thesis/models/nri/main.py", line 31, in _algorithm
+    GC_est, results_ = train_test(self.config, train_loader, valid_loader, test_loader)
+  File "/home/bjerkovic/thesis/models/nri/nri_train_test.py", line 376, in train_test
+    val_loss = train(epoch, best_val_loss, train_loader, valid_loader, config)
+  File "/home/bjerkovic/thesis/models/nri/nri_train_test.py", line 129, in train
+    output = decoder(data, edges, rel_rec, rel_send, 1)
+  File "/home/bjerkovic/.local/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1190, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/bjerkovic/thesis/models/nri/sourcecode/modules.py", line 504, in forward
+    last_pred = self.single_step_forward(last_pred, rel_rec, rel_send,
+  File "/home/bjerkovic/thesis/models/nri/sourcecode/modules.py", line 465, in single_step_forward
+    msg = F.relu(self.msg_fc2[i](msg))
+  File "/home/bjerkovic/.local/lib/python3.8/site-packages/torch/nn/functional.py", line 1457, in relu
+    result = torch.relu(input)
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.12 GiB (GPU 0; 10.76 GiB total capacity; 8.35 GiB already allocated; 1.55 GiB free; 8.38 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+
+
+###############################################################################
+Science Cluster
+Job 2541859 for user 'bjerkovic'
+Finished at: Fri Dec  2 15:39:36 CET 2022
+
+Job details:
+============
+
+Name                : exp8b
+User                : bjerkovic
+Partition           : csedu
+Nodes               : cn48
+Cores               : 2
+State               : FAILED
+Submit              : 2022-12-02T15:37:53
+Start               : 2022-12-02T15:37:54
+End                 : 2022-12-02T15:39:35
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:01:41
+Used CPU time       :   00:00:55 (efficiency: 27.62%)
+% User (Computation): 38.17%
+% System (I/O)      : 61.83%
+Mem reserved        : 2G/core
+Max Mem used        : 1.71G (cn48)
+Max Disk Write      : 0.00  (cn48)
+Max Disk Read       : 849.92K (cn48)
+
