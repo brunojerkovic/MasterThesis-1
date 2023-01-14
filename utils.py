@@ -1,6 +1,7 @@
 import yaml
 import itertools
 
+this_is = 'server'
 keyword = 'FOLLOW_'
 
 

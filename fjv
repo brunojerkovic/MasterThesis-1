@@ -1,0 +1,72 @@
+[33mcommit 0b0da8c248d6cf162b7b4a16c18833e384b23a05[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Thu Dec 15 11:03:49 2022 +0100
+
+    n_data fixed
+
+[33mcommit ae935eaf0ccb8c1ebfeeeea3ab8a9ab64a90cb2d[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Dec 14 10:33:13 2022 +0100
+
+    Changed for non-cuda devices, added rolling window
+
+[33mcommit 5cd9ec232b8638a817fb83b5bd197cf1429c7620[m
+Merge: cd9b11f 890b559
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 30 09:03:52 2022 +0100
+
+    Merge branch 'main' of https://github.com/brunogreen25/Thesis
+
+[33mcommit cd9b11ff7ef39e81e6d8ac0bab439e064011ef69[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 30 09:03:41 2022 +0100
+
+    minor changes
+
+[33mcommit 890b55968694e3a17fff19577cb4ababb101d775[m
+Author: Bruno Jerković <bruno.jerkovic5@gmail.com>
+Date:   Tue Nov 29 13:14:08 2022 +0100
+
+    Delete con1.npy
+
+[33mcommit 14834cb0e181a1128bc46fd9b7f7c439780718d5[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Tue Nov 29 13:13:08 2022 +0100
+
+    added stocks
+
+[33mcommit 9b62231c174f443d95462ca568fbfebcc0c8cc03[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 23 10:55:51 2022 +0100
+
+    fixed yaml anchor issue and some other issues, updated README file
+
+[33mcommit 3dd5922e419c069885d6e74ae9ee67f75b23cf6f[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Mon Nov 21 15:28:18 2022 +0100
+
+    changed what parameters get saved in results file
+
+[33mcommit 2e8eb0965bef10da7b7f9d622d56969f61c6a710[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 16 16:29:44 2022 +0100
+
+    More explanation
+
+[33mcommit 62ebc0b1439b941ab20f85d7851920b30cea5f46[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 16 16:23:49 2022 +0100
+
+    2
+
+[33mcommit 9748b33e5cf41aa70891594665e0d8a981be2b43[m
+Author: Bruno Jerkovic <brunojerkovi@gmail.com>
+Date:   Wed Nov 16 14:00:25 2022 +0100
+
+    initial commit
+
+[33mcommit a297ddc3a74221a370dfd720012d8e17f9089cd7[m
+Author: Bruno Jerković <bruno.jerkovic5@gmail.com>
+Date:   Wed Nov 16 13:56:13 2022 +0100
+
+    Initial commit
