@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 from copy import deepcopy
-from models.ngc.sourcecode.model_helper import activation_helper
-from models.ngc.utils import data_splitter
+from models.ngc_noise.sourcecode.model_helper import activation_helper
+from models.ngc_noise.utils import data_splitter
 
 
 class MLP(nn.Module):

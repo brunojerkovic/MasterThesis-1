@@ -18,8 +18,8 @@ def model_selector(config, result_saver) -> Model:
     elif config.model == 'tvar' or config.model == 4:
         MyModel = TVAR
         config.update(config.tvar)
-    elif config.mdoel == 'ngc_sparse' or config.model == 5:
+    elif config.model == 'ngc_noise' or config.model == 5:
         MyModel = NGCSparse
-        config.update(config.ngc_noise)
+        config.update(config.ngc)
 
     return MyModel(config, result_saver)
