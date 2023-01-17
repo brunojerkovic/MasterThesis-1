@@ -9,6 +9,8 @@ class VARGenerator(DataGenerator):
         self.sigma_eta_diag, self.sigma_eta_off_diag = config.sigma_eta_diag, config.sigma_eta_off_diag
         self.mu = np.array([config.mu_value] * self.n_data)
 
+        self.noise = None
+
     def _generate_series(self) -> tuple:
         # Generate matrices for coefficients and noise
         coef_mat = np.array([
@@ -27,9 +29,17 @@ class VARGenerator(DataGenerator):
             X[i, :] = np.random.multivariate_normal(mean=[0] * self.n_data, cov=noise_var, size=(1,))
 
         # Generate datagenerators
-        noise = np.random.multivariate_normal(mean=[0] * self.n_data, cov=noise_var, size=(self.time + self.burn_in,))
+        self.noise = np.random.multivariate_normal(mean=[0] * self.n_data, cov=noise_var, size=(self.time + self.burn_in,))
         for t in range(self.lag, self.time + self.burn_in):
-            X[t, :] = self.mu + (coef_mat @ X[t - 1, :] - self.mu) + noise[t, :]
+            X[t, :] = self.mu + (coef_mat @ X[t - 1, :] - self.mu) + self.noise[t, :]
         X = X[self.burn_in:]
+        self.noise = self.noise[self.burn_in:]
 
         return X, coef_mat
+
+    def get_noise(self) -> np.ndarray:
+        '''
+        Copy noise vector and return it
+        :return: A numpy array of noise
+        '''
+        return np.copy(self.noise)

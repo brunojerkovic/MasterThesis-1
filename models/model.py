@@ -39,9 +39,9 @@ class Model(ABC):
         self.result_saver.add_results_to_buffer(self.config, results, data_flag=False)
         return accuracy
 
-    def _calculate_accuracy(self, coef_mat: np.ndarray, coef_mat_hat: np.ndarray) -> float:
-        coef_mat_r = coef_mat.ravel()
-        coef_mat_hat_r = coef_mat_hat.ravel()
+    def _calculate_binary_accuracy(self, coef_mat: np.ndarray, coef_mat_hat: np.ndarray) -> float:
+        coef_mat_r = np.copy(coef_mat.ravel())
+        coef_mat_hat_r = np.copy(coef_mat_hat.ravel())
 
         coef_mat_r[coef_mat_r > 0.01] = 1
         coef_mat_r[coef_mat_r < 0.01] = 0
@@ -49,3 +49,17 @@ class Model(ABC):
         coef_mat_hat_r[coef_mat_hat_r < 0.01] = 0
 
         return float(sum(coef_mat_r == coef_mat_hat_r) / len(coef_mat_r))
+
+    def _calculate_accuracy(self, coef_mat: np.ndarray, coef_mat_hat: np.ndarray) -> float:
+        coef_mat_r = coef_mat.ravel()
+        coef_mat_hat_r = coef_mat_hat.ravel()
+
+        return np.sqrt(np.mean((coef_mat_r - coef_mat_hat_r) ** 2))
+
+    def _calculate_predictions_accuracy(self, y: np.ndarray, y_hat: np.ndarray):
+        y_r = y.ravel()
+        y_hat_r = y_hat.ravel()
+
+        return np.sqrt(np.mean((y_r - y_hat_r) ** 2))
+
+

@@ -43,7 +43,7 @@ class NGC(Model):
 
         # Verify learned Granger causality
         GC_est = cmlp.GC().cpu().data.numpy()
-        accuracy = self._calculate_accuracy(coef_mat, GC_est)
+        accuracy = self._calculate_binary_accuracy(coef_mat, GC_est)
 
         # For plotting predictions
         predictions = np.zeros_like(X.cpu().data.numpy()[0, :, :])

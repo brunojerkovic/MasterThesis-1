@@ -30,7 +30,7 @@ class DataGenerator(ABC):
         '''
         pass
 
-    def generate(self, result_saver: ResultSaver):
+    def generate(self, result_saver: ResultSaver = None):
         # Create seed
         random.seed(self.seed)
         np.random.seed(self.seed)
@@ -45,10 +45,11 @@ class DataGenerator(ABC):
         edges = self._generate_edges(coef_mat)
 
         # Save data to the results
-        result_saver.add_results_to_buffer(self.config, {
-            'edges': edges.tolist(),
-            'coef_mat': coef_mat.tolist()
-        })
+        if result_saver is not None:
+            result_saver.add_results_to_buffer(self.config, {
+                'edges': edges.tolist(),
+                'coef_mat': coef_mat.tolist()
+            })
 
         return series, coef_mat, edges
 

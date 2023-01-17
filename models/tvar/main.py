@@ -40,7 +40,7 @@ class TVAR(Model):
         coef_mat_hat = results[1].squeeze().T
 
         # Get accuracy of the model
-        accuracy = self._calculate_accuracy(coef_mat, coef_mat_hat)
+        accuracy = self._calculate_binary_accuracy(coef_mat, coef_mat_hat)
 
         # Save the results
         results = {
