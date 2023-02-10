@@ -44,6 +44,8 @@ class SVMGenerator(DataGenerator):
             omega = np.eye(self.n_data) * np.exp(h[t] / 2)
             y[t] = omega @ noise_eps[t]
 
+            # SAME AS: y[t] = np.exp(h[t]/2) * noise_eps[t]
+
         y = y[self.burn_in:]
 
         return y, coef_mat

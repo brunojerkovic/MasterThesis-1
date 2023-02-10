@@ -2,15 +2,15 @@
 experiment: 11
 
 # Data parameters
-c11: [0.9]
+c11: [0.8]
 c12: 0
 c21: 0
-c22: 0.9 # FOLLOW_c11
+c22: 0.8 # FOLLOW_c11
 seed: [101] # [1, 101, 33, 12, 0]
 loader: [var] # var=1, svm=2, ngc_var=3, stocks=4
 
 # Model parameters
-model: [ngc_noise] # nri=1, ngc=2, ngc0=3, tvar=4, ngc_noise=5
+model: [ngc_srsv] # nri=1, ngc=2, ngc0=3, tvar=4, ngc_noise=5
 
 # Saving parameters
 save_in_dir: True

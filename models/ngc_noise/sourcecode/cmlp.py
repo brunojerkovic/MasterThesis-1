@@ -7,14 +7,14 @@ from models.ngc_noise.utils import data_splitter
 
 
 class MLP(nn.Module):
-    def __init__(self, num_series, lag, hidden, activation, model_choice, logvar):
+    def __init__(self, num_series, lag, hidden, activation, model_choice='ngc', logvar=None):
         super(MLP, self).__init__()
         self.num_series = num_series
         self.lag = lag
         self.activation = activation_helper(activation)
         self.logvar = logvar
-        #model_choice = 'ngc'
-        p = 0.2
+        model_choice = 'ngc'
+        p = 0.05
         dropouts = []
 
         # Set up network.
@@ -23,13 +23,10 @@ class MLP(nn.Module):
 
         if model_choice == 'ngc':
             for d_in, d_out in zip(hidden, hidden[1:] + [1]):
-                dropouts.append(nn.Dropout(p=p))
+                #dropouts.append(nn.Dropout(p=p))
 
                 layer = nn.Conv1d(d_in, d_out, 1)
                 modules.append(layer)
-
-
-
 
         # Register parameters.
         self.dropouts = nn.ModuleList(dropouts)
@@ -45,18 +42,19 @@ class MLP(nn.Module):
 
         # Reparametrization trick
         # X = X + noise*std; std = e^(0.5 * log(var)) = e^(log sqrt(var)) = sqrt(var) = L (or cholesky decomposition of L)
-        # std = torch.exp(0.5 * self.logvar)
-        # X = X + (std @ eps)[None, order, :]
-        X = X # eps[None, order, :]
-        return X.transpose(2, 1)
+        X_ = X
+        if self.logvar is not None:
+            std = torch.exp(self.logvar) # TODO: maka san 0.5
+            X_ = X + (std @ eps)[:, order, :][None, :, :]
+        return X_.transpose(2, 1)
 
+    # TODO: obrisi_me
     def forward_distribution(self, X, n_samples:int=100):
         predictions = []
         for i in range(n_samples):
             predictions.append(self(X, 0, 0).detach().cpu().numpy())
 
         return predictions
-
 
 
 class cMLP(nn.Module):
@@ -76,7 +74,10 @@ class cMLP(nn.Module):
         self.activation = activation_helper(activation)
 
         # Reparametrization trick params
-        # self.logvar = nn.Parameter(torch.rand((num_series, num_series)), requires_grad=True)
+        # TODO: mozda trebam logvar pomnozit sa 2, mozda ne triba bit cholesky??
+        # self.logvar = torch.log(torch.tensor([[0.1, 0.05], [0.05, 0.1]])) #, requires_grad=True)
+        # self.logvar = nn.Parameter(self.logvar, requires_grad=True)
+        #self.logvar = nn.Parameter(torch.rand((num_series, num_series)), requires_grad=True)
         self.logvar = None
 
         # Set up networks.
@@ -91,11 +92,15 @@ class cMLP(nn.Module):
         Args:
           X: torch tensor of shape (batch, T, p).
         '''
-        return torch.cat([network(X) for network in self.networks], dim=2)
+        output = torch.cat([network(X) for network in self.networks], dim=2)
+
+        return output
 
     def get_variance(self) -> np.ndarray:
+        if self.logvar is None:
+            return np.array([[0,0], [0,0]])
         logvar_np = self.logvar.detach().cpu().numpy()
-        var_np = np.exp(0.5 * logvar_np)
+        var_np = np.exp(logvar_np)
         return var_np
 
     def GC(self, threshold=True, ignore_lag=True):
@@ -165,6 +170,32 @@ class cMLPSparse(nn.Module):
         '''
         return torch.cat([self.networks[i](X[:, :, self.sparsity[i]])
                           for i in range(self.p)], dim=2)
+
+    def GC(self, threshold=True, ignore_lag=True):
+        '''
+        Extract learned Granger causality.
+
+        Args:
+          threshold: return norm of weights, or whether norm is nonzero.
+          ignore_lag: if true, calculate norm of weights jointly for all lags.
+
+        Returns:
+          GC: (p x p) or (p x p x lag) matrix. In first case, entry (i, j)
+            indicates whether variable j is Granger causal of variable i. In
+            second case, entry (i, j, k) indicates whether it's Granger causal
+            at lag k.
+        '''
+        if ignore_lag:
+            GC = [torch.norm(net.layers[0].weight, dim=(0, 2))
+                  for net in self.networks]
+        else:
+            GC = [torch.norm(net.layers[0].weight, dim=0)
+                  for net in self.networks]
+        GC = torch.stack(GC)
+        if threshold:
+            return (GC > 0.01).int()
+        else:
+            return GC
 
 
 def prox_update(network, lam, lr, penalty):
@@ -496,11 +527,11 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
 
     # Definitions
     loss_fn = nn.MSELoss(reduction='mean')
-    cov_mat = torch.tensor([[0.10157133, -0.00103958], [-0.00103958, 0.10146144]])
+    cov_mat = torch.tensor([[1., 0.], [0., 1.]])
     mean = torch.zeros(2)
     mvn = torch.distributions.MultivariateNormal(mean, cov_mat)
-    eps_train = mvn.sample((N_train-p,)).T[None, :, :].cuda() # TODO: cuda warning here
-    eps_valid = mvn.sample((N_valid-p,)).T[None, :, :].cuda() # TODO: cuda warning here
+    eps_train = mvn.sample((N_train-lag,)).T[None, :, :]#.cuda() # TODO: cuda warning here
+    eps_valid = mvn.sample((N_valid-lag,)).T[None, :, :]#.cuda() # TODO: cuda warning here
     # eps = torch.randn((p, N_train-p)).to(device)
 
     # For early stopping.
@@ -556,14 +587,14 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
                 print('Train Loss = %f' % train_loss_list[-1])
                 if use_valid:
                     print('Validation loss = %f' % valid_loss_list[-1])
-                print('Variable usage = %.2f%%'
-                      % (100 * torch.mean(cmlp.GC().float())))
+                #print('Variable usage = %.2f%%'
+                #      % (100 * torch.mean(cmlp.GC().float())))
 
             if mean_loss < best_loss_valid:
                 best_loss_valid = mean_loss
                 best_it_valid = it
                 best_model = deepcopy(cmlp)
-            elif (it - best_it_valid) == lookback * check_every:
+            elif best_it_valid is not None and (it - best_it_valid) == lookback * check_every:
                 if verbose:
                     print('Stopping early')
                 break
@@ -669,3 +700,20 @@ def train_model_ista_stocks(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='
     restore_parameters(cmlp, best_model_valid)
 
     return train_loss_list
+
+def test_model(cmlp, X_test):
+    '''Train model with Ista.'''
+    # Initial values
+    lag = cmlp.lag
+    N_test = X_test.shape[1]
+    p = X_test.shape[-1]
+
+    # Definitions
+    loss_fn = nn.MSELoss(reduction='mean')
+    eps_test = torch.distributions.MultivariateNormal(torch.zeros(2), torch.tensor([[1., 0.], [0., 1.]])).sample((N_test-lag,)).T[None, :, :]#.cuda() # TODO: cuda warning here
+    # eps = torch.randn((p, N_train-p)).to(device)
+
+    # Calculate smooth error.
+    test_loss = sum([loss_fn(cmlp.networks[i](X_test[:, :-1], eps_test, i), X_test[:, lag:, i:i+1]) for i in range(p)])
+
+    return test_loss.item()

@@ -4,8 +4,8 @@ sparsity: 0.9
 trainset_size: 3_000
 tvt_split: [0.8] # , 0.2, 0.5, 0.8, 1.0]
 n_data: 2
-sigma_eta_diag: 0.01
-sigma_eta_off_diag: 0.01
+sigma_eta_diag: 0.1
+sigma_eta_off_diag: 0.05
 sigma_eps_diag: 1
 sigma_eps_off_diag: 0.6
 beta_value: 0.9
@@ -27,13 +27,29 @@ n_stocks: 17 # choose a number in interval [2,30]
 # Model parameters
 # NGC
 ngc:
-  max_iter: 50000 # 50000
+  max_iter: 50000
   layers_size: 100
-  num_layers: 1 # 5
+  num_layers: 5
   lr: 0.05
   lam: 0.002
   lam_ridge: 0.01
   verbose: True
+  lag: 1
+
+ngc_svsr:
+  # NGC
+  max_iter: 50000
+  layers_size: 100
+  num_layers: 5
+  lr: 0.05
+  lam: 0.002
+  lam_ridge: 0.01
+  verbose: True
+  lag: 1
+
+  # SVSR
+  idk: 0
+
 
 # NRI
 nri:
