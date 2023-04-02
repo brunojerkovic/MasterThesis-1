@@ -25,5 +25,8 @@ def model_selector(config, result_saver) -> Model:
     elif config.model == 'ngc_srsv' or config.model == 6:
         MyModel = NGC_SVSR
         config.update(config.ngc_svsr)
+    elif config.model == 'ngc_lstm' or config.model == 7:
+        MyModel = NGC
+        config.update(config.ngc)
 
     return MyModel(config, result_saver)

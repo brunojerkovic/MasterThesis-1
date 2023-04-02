@@ -19,9 +19,11 @@ class SVMGenerator(DataGenerator):
             [self.c21, self.c22]
         ])
         coef_mat = self._make_coef_stationary(coef_mat)
+        if coef_mat is None:
+            raise ArithmeticError("Coefficient matrix is not stationary!")
         sigma_eta = np.array([
-            [self.sigma_eta_diag, self.sigma_eta_off_diag],
-            [self.sigma_eta_off_diag, self.sigma_eta_diag]
+            [self.sigma_eta_diag, self.sigma_eta_off_diag],  # self.sigma_eta_off_diag
+            [self.sigma_eta_off_diag, self.sigma_eta_diag]  # self.sigma_eta_diag
         ])
         sigma_eps = np.array([
             [self.sigma_eps_diag, self.sigma_eps_off_diag],
@@ -40,7 +42,7 @@ class SVMGenerator(DataGenerator):
         for i in range(self.lag):
             h[i] = noise_eta[i]
         for t in range(self.lag, self.time + self.burn_in):
-            h[t] = self.mu @ (h[t - 1] - self.mu) + noise_eta[t]
+            h[t] = self.mu + coef_mat @ (h[t - 1] - self.mu) + noise_eta[t]
             omega = np.eye(self.n_data) * np.exp(h[t] / 2)
             y[t] = omega @ noise_eps[t]
 
@@ -48,4 +50,10 @@ class SVMGenerator(DataGenerator):
 
         y = y[self.burn_in:]
 
+        # from matplotlib import pyplot as plt
+        # plt.plot(y[-1_000:, 0])
+        # plt.plot(y[-1_000:, 1])
+        # plt.show()
+
+        # y = y[:10_000, :] # TODO: ovo makni za multivariate
         return y, coef_mat

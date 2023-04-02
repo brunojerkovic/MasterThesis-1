@@ -1,4 +1,6 @@
 # My gitignore part
+results_20_03/
+results_25_01/
 results/
 saved_models/
 data/

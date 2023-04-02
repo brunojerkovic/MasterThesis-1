@@ -8,6 +8,16 @@ from torch import optim
 from models.nri.sourcecode.modules import *
 from models.nri.sourcecode.utils import *
 
+
+def estimate_cov_mat(test_loader, predictions):
+    data = [i[0][:, -1, 0].T.detach().cpu().numpy() for i in test_loader.dataset]
+    data = np.array(data)
+    preds = [p[:,-1,0].T.detach().cpu().numpy() for p_b in predictions for p in p_b]
+    preds = np.array(preds)
+
+    noise_cov_mat_est = np.cov((preds - data).T)
+    return noise_cov_mat_est
+
 def concatenate_tensor_in_one_list(t: torch.Tensor, to_list):
     t_ = []
     for t_batch in t:
@@ -158,13 +168,13 @@ def train(epoch, best_val_loss, train_loader, valid_loader, config):
 
     # Save results in result-scraping dict object
     results['train']['time'].append(time.time()-t)
-    results['train']['nll'].append(np.mean(nll_train))
-    results['train']['kl'].append(np.mean(kl_train))
-    results['train']['mse'].append(np.mean(mse_train))
+    #results['train']['nll'].append(np.mean(nll_train))
+    #results['train']['kl'].append(np.mean(kl_train))
+    #results['train']['mse'].append(np.mean(mse_train))
     results['train']['acc'].append(np.mean(acc_train))
-    results['valid']['nll'].append(np.mean(nll_val))
-    results['valid']['kl'].append(np.mean(kl_val))
-    results['valid']['mse'].append(np.mean(mse_val))
+    #results['valid']['nll'].append(np.mean(nll_val))
+    #results['valid']['kl'].append(np.mean(kl_val))
+    #results['valid']['mse'].append(np.mean(mse_val))
     results['valid']['acc'].append(np.mean(acc_val))
 
     return np.mean(nll_val)
@@ -260,15 +270,15 @@ def test(test_loader, config):
               'acc_test: {:.10f}'.format(np.mean(acc_test)))
         print('MSE: {}'.format(mse_str))
 
-    results['test']['nll'].append(np.mean(nll_test))
-    results['test']['kl'].append(np.mean(kl_test))
-    results['test']['mse'].append(np.mean(mse_test))
+    #results['test']['nll'].append(np.mean(nll_test))
+    #results['test']['kl'].append(np.mean(kl_test))
+    #results['test']['mse'].append(np.mean(mse_test))
     results['test']['acc'].append(np.mean(acc_test))
 
     # Concatenate results of all batches (and save the prediction/targets from the decoder)
     connection_graph = concatenate_tensor_in_one_list(connection_graph, to_list=False)
 
-    return connection_graph
+    return connection_graph, test_predictions
 
 
 def train_test(config, train_loader, valid_loader, test_loader):
@@ -324,6 +334,20 @@ def train_test(config, train_loader, valid_loader, test_loader):
     triu_indices = get_triu_offdiag_indices(config.num_atoms)
     tril_indices = get_tril_offdiag_indices(config.num_atoms)
 
+    # Calculate total number of parameters
+    params = []
+    for param in encoder.parameters():
+        params.append(param.shape)
+    for param in decoder.parameters():
+        params.append(param.shape)
+    lens = 0
+    for param in params:
+        if len(param) == 2:
+            lens += param[0] * param[1]
+        if len(param) == 1:
+            lens += param[0]
+
+
     # Set up prior
     if config.prior:
         prior = np.array([0.95, 0.05])  # , 0.03, 0.03])
@@ -372,7 +396,10 @@ def train_test(config, train_loader, valid_loader, test_loader):
     }
     best_val_loss = np.inf
     best_epoch = 0
+    prev_time = time.time()
     for epoch in range(config.epochs):
+        print("TIME", (time.time() - prev_time)*200)
+        prev_time = time.time()
         val_loss = train(epoch, best_val_loss, train_loader, valid_loader, config)
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -380,9 +407,11 @@ def train_test(config, train_loader, valid_loader, test_loader):
     if config.verbose:
         print("Optimization finished")
         print(f"Best epoch {best_epoch}")
-    connection_graph = test(test_loader, config)
+    connection_graph, predictions = test(test_loader, config)
 
     # TODO: Get somehow coef_mat_est from the outputs inferred on test set
     coef_mat_est = aggregate_results(connection_graph)
+    coef_mat_est += np.eye(coef_mat_est.shape[0])
+    noise_cov_mat_est = estimate_cov_mat(test_loader, predictions)
 
-    return coef_mat_est, results
+    return coef_mat_est, results, noise_cov_mat_est

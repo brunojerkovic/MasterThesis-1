@@ -1,13 +1,13 @@
 # Data parameters
 generate_ngc_data: true
-sparsity: 0.9
-trainset_size: 3_000
+sparsity: 0.5
+trainset_size: [3_000]
 tvt_split: [0.8] # , 0.2, 0.5, 0.8, 1.0]
 n_data: 2
-sigma_eta_diag: 0.1
-sigma_eta_off_diag: 0.05
-sigma_eps_diag: 1
-sigma_eps_off_diag: 0.6
+sigma_eta_diag: [0.01]
+sigma_eta_off_diag: [0]  # Bilo je 0.01
+sigma_eps_diag: 1 # TODO: 1
+sigma_eps_off_diag: 0.6 # TODO: 0.6
 beta_value: 0.9
 lags: 1
 timesteps: &timesteps 20
@@ -27,18 +27,19 @@ n_stocks: 17 # choose a number in interval [2,30]
 # Model parameters
 # NGC
 ngc:
-  max_iter: 50000
+  max_iter: 15 # 50_000
   layers_size: 100
-  num_layers: 5
-  lr: 0.05
+  num_layers: 1
+  lr: 0.05 # 0.05
   lam: 0.002
   lam_ridge: 0.01
   verbose: True
   lag: 1
+  context: 2
 
 ngc_svsr:
   # NGC
-  max_iter: 50000
+  max_iter: 10
   layers_size: 100
   num_layers: 5
   lr: 0.05
@@ -50,10 +51,9 @@ ngc_svsr:
   # SVSR
   idk: 0
 
-
 # NRI
 nri:
-  epochs: 200 # 200
+  epochs: 200 # 10 # 200
   prediction_steps: 4
   decoder_hidden: 256
   encoder_hidden: 256
@@ -77,7 +77,7 @@ nri:
   skip_first: true
   var: 0.00005
   hard: false
-  prior: false
+  prior: true
   dynamic_graph: false
   verbose: True
 
@@ -86,5 +86,5 @@ tvar:
   r_bin_path: ../.local/lib/R-4.2.2
   P: 1
   lambda1_opt: 5
-  gamma1_opt: 0.2
+  gamma1_opt: 0.
   verbose: True

@@ -1,5 +1,5 @@
 import utils
-from datagenerators import DataGenerator, VARGenerator, NGCVARGenerator, SVMGenerator, StockGenerator
+from datagenerators import DataGenerator, VARGenerator, NGCVARGenerator, SVMGenerator, StockGenerator, NGCSVMGenerator
 
 
 def generator_selector(config: utils.dotdict) -> DataGenerator:
@@ -12,5 +12,7 @@ def generator_selector(config: utils.dotdict) -> DataGenerator:
         Generator = NGCVARGenerator
     elif config.loader == 'stocks' or config.loader == 4:
         Generator = StockGenerator
+    elif config.loader == 'ngc_svm' or config.loader == 5:
+        Generator = NGCSVMGenerator
 
     return Generator(config)

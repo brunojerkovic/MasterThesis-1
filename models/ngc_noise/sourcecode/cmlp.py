@@ -18,11 +18,12 @@ class MLP(nn.Module):
         dropouts = []
 
         # Set up network.
+        # TODO: promijeni ovo ispod
         layer = nn.Conv1d(num_series, hidden[0], lag) if model_choice == 'ngc' else nn.Conv1d(num_series, 1, lag, bias=False)
         modules = [layer]
 
         if model_choice == 'ngc':
-            for d_in, d_out in zip(hidden, hidden[1:] + [1]):
+            for d_in, d_out in zip(hidden, hidden[1:] + hidden[-1:]): # TODO: Bilo je + [1]
                 #dropouts.append(nn.Dropout(p=p))
 
                 layer = nn.Conv1d(d_in, d_out, 1)
@@ -30,11 +31,11 @@ class MLP(nn.Module):
 
         # Register parameters.
         self.dropouts = nn.ModuleList(dropouts)
-        self.layers = nn.ModuleList(modules)
+        self.layers = nn.ModuleList(modules + [nn.Conv1d(hidden[-1], 1, lag)]) #, nn.Conv1d(hidden[-1], 5, lag)])
 
     def forward(self, X, eps: torch.tensor, order: int):
         X = X.transpose(2, 1)
-        for i, fc in enumerate(self.layers):
+        for i, fc in enumerate(self.layers[:-2]):
             if i != 0:
                 #X = self.dropouts[i-1](X)
                 X = self.activation(X)
@@ -42,11 +43,15 @@ class MLP(nn.Module):
 
         # Reparametrization trick
         # X = X + noise*std; std = e^(0.5 * log(var)) = e^(log sqrt(var)) = sqrt(var) = L (or cholesky decomposition of L)
-        X_ = X
-        if self.logvar is not None:
-            std = torch.exp(self.logvar) # TODO: maka san 0.5
-            X_ = X + (std @ eps)[:, order, :][None, :, :]
-        return X_.transpose(2, 1)
+        #X_ = X
+        #if self.logvar is not None:
+        #    std = torch.exp(self.logvar) # TODO: maka san 0.5
+        #    X_ = X + (std @ eps)[:, order, :][None, :, :]
+        mean = self.layers[-2](X)
+        #cov = self.layers[-1](X[0,0])
+        # TODO: ovdje dodaj cov sloj, a u cMLP dodaj repr. trick sa meanom i cov-om
+
+        return mean.transpose(2, 1) #, cov
 
     # TODO: obrisi_me
     def forward_distribution(self, X, n_samples:int=100):
@@ -85,16 +90,35 @@ class cMLP(nn.Module):
             MLP(num_series, lag, hidden, activation, model_choice, self.logvar)
             for _ in range(num_series)])
 
-    def forward(self, X):
+    def reparametrize(self, mean, log_var):
+        var = torch.exp(0.5 * log_var)
+        noise = torch.randn_like(mean).cuda()
+        x = mean + var @ noise
+        return x
+
+    def forward(self, X: torch.Tensor):
         '''
         Perform forward pass.
 
         Args:
           X: torch tensor of shape (batch, T, p).
         '''
-        output = torch.cat([network(X) for network in self.networks], dim=2)
+        # output = torch.cat([network(X) for network in self.networks], dim=2)
+        p = 2
+        lag = 1
+        X_train = X
 
-        return output
+        outputs = []
+        for i in range(p):
+            output_i = self.networks[i](X_train, 0, i)[0]
+            outputs.append(output_i)
+        outputs = torch.cat(outputs, dim=2)
+
+        # means = torch.cat([self.networks[i](X_train, 0, i) for i in range(p)], dim=2)
+        # output, log_var =
+
+
+        return outputs
 
     def get_variance(self) -> np.ndarray:
         if self.logvar is None:
@@ -102,74 +126,6 @@ class cMLP(nn.Module):
         logvar_np = self.logvar.detach().cpu().numpy()
         var_np = np.exp(logvar_np)
         return var_np
-
-    def GC(self, threshold=True, ignore_lag=True):
-        '''
-        Extract learned Granger causality.
-
-        Args:
-          threshold: return norm of weights, or whether norm is nonzero.
-          ignore_lag: if true, calculate norm of weights jointly for all lags.
-
-        Returns:
-          GC: (p x p) or (p x p x lag) matrix. In first case, entry (i, j)
-            indicates whether variable j is Granger causal of variable i. In
-            second case, entry (i, j, k) indicates whether it's Granger causal
-            at lag k.
-        '''
-        if ignore_lag:
-            GC = [torch.norm(net.layers[0].weight, dim=(0, 2))
-                  for net in self.networks]
-        else:
-            GC = [torch.norm(net.layers[0].weight, dim=0)
-                  for net in self.networks]
-        GC = torch.stack(GC)
-        if threshold:
-            return (GC > 0.01).int()
-        else:
-            return GC
-
-
-class cMLPSparse(nn.Module):
-    def __init__(self, num_series, sparsity, lag, hidden, activation='relu'):
-        '''
-        cMLP model that only uses specified interactions.
-
-        Args:
-          num_series: dimensionality of multivariate time series.
-          sparsity: torch byte tensor indicating Granger causality, with size
-            (num_series, num_series).
-          lag: number of previous time points to use in prediction.
-          hidden: list of number of hidden units per layer.
-          activation: nonlinearity at each layer.
-        '''
-        super(cMLPSparse, self).__init__()
-        self.p = num_series
-        self.lag = lag
-        self.activation = activation_helper(activation)
-        self.sparsity = sparsity
-
-        # Set up networks.
-        self.networks = []
-        for i in range(num_series):
-            num_inputs = int(torch.sum(sparsity[i].int()))
-            self.networks.append(MLP(num_inputs, lag, hidden, activation))
-
-        # Register parameters.
-        param_list = []
-        for i in range(num_series):
-            param_list += list(self.networks[i].parameters())
-        self.param_list = nn.ParameterList(param_list)
-
-    def forward(self, X):
-        '''
-        Perform forward pass.
-
-        Args:
-          X: torch tensor of shape (batch, T, p).
-        '''
-        return torch.cat([self.networks[i](X[:, :, self.sparsity[i]])
-                          for i in range(self.p)], dim=2)
 
     def GC(self, threshold=True, ignore_lag=True):
         '''
@@ -268,253 +224,6 @@ def restore_parameters(model, best_model):
         params.data = best_params
 
 
-def train_model_gista(cmlp, X, lam, lam_ridge, lr, penalty, max_iter,
-                      check_every=100, r=0.8, lr_min=1e-8, sigma=0.5,
-                      monotone=False, m=10, lr_decay=0.5,
-                      begin_line_search=True, switch_tol=1e-3, verbose=1):
-    '''
-    Train cMLP model with GISTA.
-
-    Args:
-      clstm: clstm model.
-      X: tensor of datagenerators, shape (batch, T, p).
-      lam: parameter for nonsmooth regularization.
-      lam_ridge: parameter for ridge regularization on output layer.
-      lr: learning rate.
-      penalty: type of nonsmooth regularization.
-      max_iter: max number of GISTA iterations.
-      check_every: how frequently to record loss.
-      r: for line search.
-      lr_min: for line search.
-      sigma: for line search.
-      monotone: for line search.
-      m: for line search.
-      lr_decay: for adjusting initial learning rate of line search.
-      begin_line_search: whether to begin with line search.
-      switch_tol: tolerance for switching to line search.
-      verbose: level of verbosity (0, 1, 2).
-    '''
-    p = cmlp.p
-    lag = cmlp.lag
-    cmlp_copy = deepcopy(cmlp)
-    loss_fn = nn.MSELoss(reduction='mean')
-    lr_list = [lr for _ in range(p)]
-
-    # Calculate full loss.
-    mse_list = []
-    smooth_list = []
-    loss_list = []
-    for i in range(p):
-        net = cmlp.networks[i]
-        mse = loss_fn(net(X[:, :-1]), X[:, lag:, i:i+1])
-        ridge = ridge_regularize(net, lam_ridge)
-        smooth = mse + ridge
-        mse_list.append(mse)
-        smooth_list.append(smooth)
-        with torch.no_grad():
-            nonsmooth = regularize(net, lam, penalty)
-            loss = smooth + nonsmooth
-            loss_list.append(loss)
-
-    # Set up lists for loss and mse.
-    with torch.no_grad():
-        loss_mean = sum(loss_list) / p
-        mse_mean = sum(mse_list) / p
-    train_loss_list = [loss_mean]
-    train_mse_list = [mse_mean]
-
-    # For switching to line search.
-    line_search = begin_line_search
-
-    # For line search criterion.
-    done = [False for _ in range(p)]
-    assert 0 < sigma <= 1
-    assert m > 0
-    if not monotone:
-        last_losses = [[loss_list[i]] for i in range(p)]
-
-    for it in range(max_iter):
-        # Backpropagate errors.
-        sum([smooth_list[i] for i in range(p) if not done[i]]).backward()
-
-        # For next iteration.
-        new_mse_list = []
-        new_smooth_list = []
-        new_loss_list = []
-
-        # Perform GISTA step for each network.
-        for i in range(p):
-            # Skip if network converged.
-            if done[i]:
-                new_mse_list.append(mse_list[i])
-                new_smooth_list.append(smooth_list[i])
-                new_loss_list.append(loss_list[i])
-                continue
-
-            # Prepare for line search.
-            step = False
-            lr_it = lr_list[i]
-            net = cmlp.networks[i]
-            net_copy = cmlp_copy.networks[i]
-
-            while not step:
-                # Perform tentative ISTA step.
-                for param, temp_param in zip(net.parameters(),
-                                             net_copy.parameters()):
-                    temp_param.data = param - lr_it * param.grad
-
-                # Proximal update.
-                prox_update(net_copy, lam, lr_it, penalty)
-
-                # Check line search criterion.
-                mse = loss_fn(net_copy(X[:, :-1]), X[:, lag:, i:i+1])
-                ridge = ridge_regularize(net_copy, lam_ridge)
-                smooth = mse + ridge
-                with torch.no_grad():
-                    nonsmooth = regularize(net_copy, lam, penalty)
-                    loss = smooth + nonsmooth
-                    tol = (0.5 * sigma / lr_it) * sum(
-                        [torch.sum((param - temp_param) ** 2)
-                         for param, temp_param in
-                         zip(net.parameters(), net_copy.parameters())])
-
-                comp = loss_list[i] if monotone else max(last_losses[i])
-                if not line_search or (comp - loss) > tol:
-                    step = True
-                    if verbose > 1:
-                        print('Taking step, network i = %d, lr = %f'
-                              % (i, lr_it))
-                        print('Gap = %f, tol = %f' % (comp - loss, tol))
-
-                    # For next iteration.
-                    new_mse_list.append(mse)
-                    new_smooth_list.append(smooth)
-                    new_loss_list.append(loss)
-
-                    # Adjust initial learning rate.
-                    lr_list[i] = (
-                        (lr_list[i] ** (1 - lr_decay)) * (lr_it ** lr_decay))
-
-                    if not monotone:
-                        if len(last_losses[i]) == m:
-                            last_losses[i].pop(0)
-                        last_losses[i].append(loss)
-                else:
-                    # Reduce learning rate.
-                    lr_it *= r
-                    if lr_it < lr_min:
-                        done[i] = True
-                        new_mse_list.append(mse_list[i])
-                        new_smooth_list.append(smooth_list[i])
-                        new_loss_list.append(loss_list[i])
-                        if verbose > 0:
-                            print('Network %d converged' % (i + 1))
-                        break
-
-            # Clean up.
-            net.zero_grad()
-
-            if step:
-                # Swap network parameters.
-                cmlp.networks[i], cmlp_copy.networks[i] = net_copy, net
-
-        # For next iteration.
-        mse_list = new_mse_list
-        smooth_list = new_smooth_list
-        loss_list = new_loss_list
-
-        # Check if all networks have converged.
-        if sum(done) == p:
-            if verbose > 0:
-                print('Done at iteration = %d' % (it + 1))
-            break
-
-        # Check progress.
-        if (it + 1) % check_every == 0:
-            with torch.no_grad():
-                loss_mean = sum(loss_list) / p
-                mse_mean = sum(mse_list) / p
-                ridge_mean = (sum(smooth_list) - sum(mse_list)) / p
-                nonsmooth_mean = (sum(loss_list) - sum(smooth_list)) / p
-
-            train_loss_list.append(loss_mean)
-            train_mse_list.append(mse_mean)
-
-            if verbose > 0:
-                print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
-                print('Total loss = %f' % loss_mean)
-                print('MSE = %f, Ridge = %f, Nonsmooth = %f'
-                      % (mse_mean, ridge_mean, nonsmooth_mean))
-                print('Variable usage = %.2f%%'
-                      % (100 * torch.mean(cmlp.GC().float())))
-
-            # Check whether loss has increased.
-            if not line_search:
-                if train_loss_list[-2] - train_loss_list[-1] < switch_tol:
-                    line_search = True
-                    if verbose > 0:
-                        print('Switching to line search')
-
-    return train_loss_list, train_mse_list
-
-
-def train_model_adam(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
-                     lookback=5, check_every=100, verbose=1):
-    '''Train model with Adam.'''
-    lag = cmlp.lag
-    p = X.shape[-1]
-    loss_fn = nn.MSELoss(reduction='mean')
-    optimizer = torch.optim.Adam(cmlp.parameters(), lr=lr)
-    train_loss_list = []
-
-    # For early stopping.
-    best_it = None
-    best_loss = np.inf
-    best_model = None
-
-    for it in range(max_iter):
-        # Calculate loss.
-        loss = sum([loss_fn(cmlp.networks[i](X[:, :-1]), X[:, lag:, i:i+1])
-                    for i in range(p)])
-
-        # Add penalty terms.
-        if lam > 0:
-            loss = loss + sum([regularize(net, lam, penalty)
-                               for net in cmlp.networks])
-        if lam_ridge > 0:
-            loss = loss + sum([ridge_regularize(net, lam_ridge)
-                               for net in cmlp.networks])
-
-        # Take gradient step.
-        loss.backward()
-        optimizer.step()
-        cmlp.zero_grad()
-
-        # Check progress.
-        if (it + 1) % check_every == 0:
-            mean_loss = loss / p
-            train_loss_list.append(mean_loss.detach())
-
-            if verbose > 0:
-                print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
-                print('Loss = %f' % mean_loss)
-
-            # Check for early stopping.
-            if mean_loss < best_loss:
-                best_loss = mean_loss
-                best_it = it
-                best_model = deepcopy(cmlp)
-            elif (it - best_it) == lookback * check_every:
-                if verbose:
-                    print('Stopping early')
-                break
-
-    # Restore best model.
-    restore_parameters(cmlp, best_model)
-
-    return train_loss_list
-
-
 def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
                      lookback=5, check_every=100, verbose=1, device=None, use_valid=True):
     '''Train model with Ista.'''
@@ -540,7 +249,9 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
     best_model = None
 
     # Calculate smooth error.
-    loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1], eps_train, i), X_train[:, lag:, i:i+1]) for i in range(p)])
+    output = cmlp(X_train[:,:-1])
+    loss = sum([loss_fn(output[:, :, i:i+1], X_train[:, lag:, i:i+1]) for i in range(p)])
+    #loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1], eps_train, i), X_train[:, lag:, i:i+1]) for i in range(p)])
 
     ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
     smooth = loss + ridge
@@ -559,7 +270,9 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
         cmlp.zero_grad()
 
         # Calculate smoooth loss for next iteration.
-        loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1], eps_train, i), X_train[:, lag:, i:i + 1]) for i in range(p)])
+        output = cmlp(X_train[:,:-1])
+        loss = sum([loss_fn(output[:, :, i:i + 1], X_train[:, lag:, i:i + 1]) for i in range(p)])
+        #loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1], eps_train, i), X_train[:, lag:, i:i + 1]) for i in range(p)])
 
         # Calculate smooth_loss = mse + ridge (all other than 1st layer)
         ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
@@ -575,7 +288,9 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
 
             # Check for early stopping. (VALIDATION SET)
             if use_valid:
-                loss_valid = sum([loss_fn(cmlp.networks[i](X_valid[:, :-1], eps_valid, i), X_valid[:, lag:, i:i + 1]) for i in range(p)])
+                output = cmlp(X_valid[:,:-1])
+                loss_valid = sum([loss_fn(output[:, :, i:i + 1], X_valid[:, lag:, i:i + 1]) for i in range(p)])
+                #loss_valid = sum([loss_fn(cmlp.networks[i](X_valid[:, :-1], eps_valid, i), X_valid[:, lag:, i:i + 1]) for i in range(p)])
                 ridge_loss_valid = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
                 nonsmooth_valid = sum([regularize(net, lam, penalty) for net in cmlp.networks])
                 mean_loss = (loss_valid + ridge_loss_valid + nonsmooth_valid) / p
@@ -605,104 +320,9 @@ def train_model_ista(cmlp, X_train, X_valid, lr, max_iter, lam=0, lam_ridge=0, p
 
     return train_loss_list, valid_loss_list
 
-def train_model_ista_stocks(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
-                     lookback=5, check_every=100, verbose=1, train_test_split=(0.8, 0.1, 0.1)):
-    train_size, valid_size, test_size = X.shape[0] * train_test_split[0], X.shape[0] * train_test_split[1], X.shape[0] * train_test_split[2]
-
-    '''Train model with Adam.'''
-    lag = cmlp.lag
-    p = X.shape[-1]
-    loss_fn = nn.MSELoss(reduction='mean')
-    train_loss_list, valid_loss_list = [], []
-
-    # For early stopping.
-    best_it, best_it_valid = None, None
-    best_loss, best_loss_valid = np.inf, np.inf
-    best_model, best_model_valid = None, None
-
-    # Calculate smooth error.
-    mse_loss = sum([loss_fn(cmlp.networks[i](X[:, :-1]), X[:, lag:, i:i+1])
-                for i in range(p)])
-    ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
-    smooth = mse_loss + ridge
-
-    for it in range(max_iter):
-        X_train_full, X_valid_full = data_splitter(X, train_test_split, it, max_iter)
-        mse_loss, mse_loss_valid = 0, 0
-
-        for (X_train, X_valid) in zip(X_train_full, X_valid_full):
-            # Take gradient step.
-            smooth.backward()
-            for param in cmlp.parameters():
-                param.data = param - lr * param.grad
-
-            # Take prox step.
-            if lam > 0:
-                for net in cmlp.networks:
-                    prox_update(net, lam, lr, penalty)
-
-            cmlp.zero_grad()
-
-            # Calculate loss for next iteration.
-            mse_loss = sum([loss_fn(cmlp.networks[i](X_train[:, :-1]), X_train[:, lag:, i:i+1])
-                        for i in range(p)])
-            ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
-            smooth = mse_loss + ridge
-
-            # Check progress.
-            if (it + 1) % check_every == 0:
-                # Add nonsmooth penalty.
-                nonsmooth = sum([regularize(net, lam, penalty)
-                                 for net in cmlp.networks])
-                mean_loss = (smooth + nonsmooth) / p
-                train_loss_list.append(mean_loss.detach())
-
-                if verbose > 0:
-                    print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
-                    print('Loss = %f' % mean_loss)
-                    print('Variable usage = %.2f%%'
-                          % (100 * torch.mean(cmlp.GC().float())))
-
-                # Check for early stopping.
-                if mean_loss < best_loss:
-                    best_loss = mean_loss
-                    best_it = it
-                    best_model = deepcopy(cmlp)
-                elif (it - best_it) == lookback * check_every:
-                    if verbose:
-                        print('Stopping early')
-                    break
-
-            # Perform validation check
-            smooth_valid = sum([loss_fn(cmlp.networks[i](X_valid[:, :-1]), X_valid[:, lag:, i:i+1])
-                    for i in range(p)]) + ridge
-            if (it + 1) % check_every == 0:
-                mean_loss_valid = (smooth_valid + nonsmooth) / p
-                valid_loss_list.append(mean_loss_valid.detach())
-
-                if verbose > 0:
-                    print(('-' * 10 + 'Iter = %d' + '-' * 10) % (it + 1))
-                    print('VALID Loss = %f' % mean_loss_valid)
-                    print('VALID Variable usage = %.2f%%'
-                          % (100 * torch.mean(cmlp.GC().float())))
-                # Check for early stopping.
-                if mean_loss_valid < best_loss_valid:
-                    best_loss_valid = mean_loss_valid
-                    best_it_valid = it
-                    best_model_valid = deepcopy(cmlp)
-                elif (it - best_it_valid) == lookback * check_every:
-                    if verbose:
-                        print('Stopping early')
-                    break
-
-
-    # Restore best model.
-    restore_parameters(cmlp, best_model_valid)
-
-    return train_loss_list
 
 def test_model(cmlp, X_test):
-    '''Train model with Ista.'''
+    """Train model with Ista."""
     # Initial values
     lag = cmlp.lag
     N_test = X_test.shape[1]
@@ -714,6 +334,8 @@ def test_model(cmlp, X_test):
     # eps = torch.randn((p, N_train-p)).to(device)
 
     # Calculate smooth error.
-    test_loss = sum([loss_fn(cmlp.networks[i](X_test[:, :-1], eps_test, i), X_test[:, lag:, i:i+1]) for i in range(p)])
+    output = cmlp(X_test[:,:-1])
+    test_loss = sum([loss_fn(output[:, :, i:i+1], X_test[:, lag:, i:i+1]) for i in range(p)])
+    #test_loss = sum([loss_fn(cmlp.networks[i](X_test[:, :-1], eps_test, i), X_test[:, lag:, i:i+1]) for i in range(p)])
 
     return test_loss.item()

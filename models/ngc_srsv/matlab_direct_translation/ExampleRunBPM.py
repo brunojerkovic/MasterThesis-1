@@ -22,15 +22,18 @@ def run():
     model = LSTMSV()
 
     # Create a Blocking Pseudo-Marginal object, setting random seed property
-    sampler = BPM(seed=1, save_after=100, num_mcmc=100_000)
-    # sampler = ParticleFilter(model, y)
+    # sampler = BPM(seed=1, save_after=100, num_mcmc=100_000)
+    sampler = ParticleFilter(model, y)
 
     # Estimate using BPM
-    lstmSV_fit = sampler.estimate(model, y)
+    # lstmSV_fit = sampler.estimate(model, y)
+    lstmSV_fit = sampler.estimate()
+
+    print("LOSS (negative likelihood)", lstmSV_fit)
 
     # Estimate marginal likelihood with IS2
-    lstmSV_fit.Post.IS2 = IS2(y, lstmSV_fit, num_particle=1_000, num_is_particle=5_000, burnin=10_000, seed=1)
+    #lstmSV_fit.Post.IS2 = IS2(y, lstmSV_fit, num_particle=1_000, num_is_particle=5_000, burnin=10_000, seed=1)
 
-    print("Marginal likelihood", lstmSV_fit.Post.IS2.Marllh)
+    #print("Marginal likelihood", lstmSV_fit.Post.IS2.Marllh)
 
 run()

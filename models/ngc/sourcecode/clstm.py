@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -252,6 +254,7 @@ def train_model_gista(clstm, X, context, lam, lam_ridge, lr, max_iter,
     if not monotone:
         last_losses = [[loss_list[i]] for i in range(p)]
 
+    prev_time = time.time()
     for it in range(max_iter):
         # Backpropagate errors.
         sum([smooth_list[i] for i in range(p) if not done[i]]).backward()
@@ -367,6 +370,8 @@ def train_model_gista(clstm, X, context, lam, lam_ridge, lr, max_iter,
                       % (mse_mean, ridge_mean, nonsmooth_mean))
                 print('Variable usage = %.2f%%'
                       % (100 * torch.mean(clstm.GC().float())))
+                print(time.time() - prev_time)
+            prev_time = time.time()
 
             # Check whether loss has increased.
             if not line_search:
@@ -439,8 +444,10 @@ def train_model_adam(clstm, X, context, lr, max_iter, lam=0, lam_ridge=0,
     return train_loss_list
 
 
-def train_model_ista(clstm, X, context, lr, max_iter, lam=0, lam_ridge=0,
+def train_model_ista(clstm, X, lr, max_iter, context=10, lam=0, lam_ridge=0,
                      lookback=5, check_every=50, verbose=1):
+    print("USING cLSTM HERE!")
+
     '''Train model with Adam.'''
     p = X.shape[-1]
     loss_fn = nn.MSELoss(reduction='mean')
@@ -462,6 +469,7 @@ def train_model_ista(clstm, X, context, lr, max_iter, lam=0, lam_ridge=0,
     ridge = sum([ridge_regularize(net, lam_ridge) for net in clstm.networks])
     smooth = loss + ridge
 
+    prev_time = time.time()
     for it in range(max_iter):
         # Take gradient step.
         smooth.backward()
@@ -481,6 +489,9 @@ def train_model_ista(clstm, X, context, lr, max_iter, lam=0, lam_ridge=0,
         ridge = sum([ridge_regularize(net, lam_ridge)
                      for net in clstm.networks])
         smooth = loss + ridge
+
+        print("TIME", (time.time() - prev_time) * 50_000)
+        prev_time = time.time()
 
         # Check progress.
         if (it + 1) % check_every == 0:

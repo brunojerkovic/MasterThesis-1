@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import numpy as np
@@ -84,7 +86,7 @@ class cMLP(nn.Module):
                   for net in self.networks]
         GC = torch.stack(GC)
         if threshold:
-            return (GC > 0.01).int()
+            return (GC > 0.0).int()
         else:
             return GC
 
@@ -467,6 +469,8 @@ def train_model_ista(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
     ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
     smooth = loss + ridge
 
+    prev_time = time.time()
+
     for it in range(max_iter):
         # Take gradient step.
         smooth.backward()
@@ -485,6 +489,9 @@ def train_model_ista(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
                     for i in range(p)])
         ridge = sum([ridge_regularize(net, lam_ridge) for net in cmlp.networks])
         smooth = loss + ridge
+
+        print("TIME", (time.time() - prev_time)*50_000)
+        prev_time = time.time()
 
         # Check progress.
         if (it + 1) % check_every == 0:
@@ -505,7 +512,7 @@ def train_model_ista(cmlp, X, lr, max_iter, lam=0, lam_ridge=0, penalty='H',
                 best_loss = mean_loss
                 best_it = it
                 best_model = deepcopy(cmlp)
-            elif (it - best_it) == lookback * check_every:
+            elif best_it is not None and (it - best_it) == lookback * check_every:
                 if verbose:
                     print('Stopping early')
                 break
